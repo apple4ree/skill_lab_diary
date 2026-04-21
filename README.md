@@ -24,6 +24,18 @@ Project name = basename of the current working directory (override with a `.diar
 
 ## Configure
 
+### Option A — Interactive setup (recommended)
+
+After installing, run:
+
+```
+/research-diary-setup
+```
+
+Claude will prompt you for your diary repo URL and local path, write the values into `~/.claude/settings.json`, and initialize the local diary directory. You can re-run it later to change the configuration.
+
+### Option B — Manual
+
 Add to `~/.claude/settings.json`:
 
 ```json
@@ -74,15 +86,18 @@ Tests cover the two shell scripts (`diary_setup.sh`, `diary_commit.sh`). Merge b
 .
 ├── .claude-plugin/plugin.json
 ├── README.md
-├── skills/research-diary/
-│   ├── SKILL.md
-│   ├── scripts/
-│   │   ├── diary_setup.sh
-│   │   └── diary_commit.sh
-│   └── references/
-│       ├── diary_format.md
-│       ├── merge_rules.md
-│       └── test_scenarios.md
+├── skills/
+│   ├── research-diary/
+│   │   ├── SKILL.md
+│   │   ├── scripts/
+│   │   │   ├── diary_setup.sh
+│   │   │   └── diary_commit.sh
+│   │   └── references/
+│   │       ├── diary_format.md
+│   │       ├── merge_rules.md
+│   │       └── test_scenarios.md
+│   └── research-diary-setup/
+│       └── SKILL.md
 ├── tests/
 └── docs/superpowers/{specs,plans}/
 ```
