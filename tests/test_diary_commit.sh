@@ -4,7 +4,7 @@
 set -u
 THIS_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$THIS_DIR/.." && pwd)"
-SCRIPT="$REPO_ROOT/skills/research-diary/scripts/diary_commit.sh"
+SCRIPT="$REPO_ROOT/plugin/skills/research-diary/scripts/diary_commit.sh"
 
 # shellcheck disable=SC1091
 . "$THIS_DIR/test_helpers.sh"

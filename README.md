@@ -91,22 +91,24 @@ Tests cover the two shell scripts (`diary_setup.sh`, `diary_commit.sh`). Merge b
 
 ```
 .
-├── .claude-plugin/plugin.json
-├── README.md
-├── skills/
-│   ├── research-diary/
-│   │   ├── SKILL.md
-│   │   ├── scripts/
-│   │   │   ├── diary_setup.sh
-│   │   │   └── diary_commit.sh
-│   │   └── references/
-│   │       ├── diary_format.md
-│   │       ├── merge_rules.md
-│   │       └── test_scenarios.md
-│   └── research-diary-setup/
-│       └── SKILL.md
+├── .claude-plugin/marketplace.json   # marketplace index
+├── plugin/                            # the plugin itself
+│   ├── .claude-plugin/plugin.json    # plugin manifest
+│   └── skills/
+│       ├── research-diary/
+│       │   ├── SKILL.md
+│       │   ├── scripts/
+│       │   │   ├── diary_setup.sh
+│       │   │   └── diary_commit.sh
+│       │   └── references/
+│       │       ├── diary_format.md
+│       │       ├── merge_rules.md
+│       │       └── test_scenarios.md
+│       └── research-diary-setup/
+│           └── SKILL.md
 ├── tests/
-└── docs/superpowers/{specs,plans}/
+├── docs/superpowers/{specs,plans}/
+└── README.md
 ```
 
 ## License
