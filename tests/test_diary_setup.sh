@@ -39,6 +39,23 @@ fi
 
 cleanup_tmpdir "$SANDBOX"
 
+# --- Test: git init when path missing and no remote set ---
+_test_begin "git init when DIARY_GIT_REMOTE unset"
+
+SANDBOX=$(setup_tmpdir "$TMP_ROOT")
+LOCAL="$SANDBOX/diary"
+
+DIARY_LOCAL_PATH="$LOCAL" bash "$SCRIPT"
+actual_exit=$?
+
+if [ $actual_exit -eq 0 ] && [ -d "$LOCAL/.git" ]; then
+    _test_ok
+else
+    _test_fail "expected git init at $LOCAL (exit=$actual_exit)"
+fi
+
+cleanup_tmpdir "$SANDBOX"
+
 # --- Summary ---
 echo ""
 echo "Passed: $TEST_PASS | Failed: $TEST_FAIL"

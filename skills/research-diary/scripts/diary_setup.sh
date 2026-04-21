@@ -14,6 +14,9 @@ if [ ! -e "$local_path" ]; then
         git clone "$remote" "$local_path"
         exit $?
     fi
+    mkdir -p "$local_path"
+    git -C "$local_path" init -q -b main
+    exit $?
 fi
 
 exit 0
