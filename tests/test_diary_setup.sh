@@ -21,7 +21,7 @@ REMOTE="$SANDBOX/remote.git"
 LOCAL="$SANDBOX/diary"
 
 # Build a bare remote with one commit so clone succeeds
-git init --bare -q "$REMOTE"
+git init --bare -q -b main "$REMOTE"
 SEED="$SANDBOX/seed"
 git init -q -b main "$SEED"
 ( cd "$SEED" && git -c user.email=t@t -c user.name=t commit --allow-empty -q -m init \
