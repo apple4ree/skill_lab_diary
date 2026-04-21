@@ -19,7 +19,7 @@ Project name = basename of the current working directory (override with a `.diar
 ## Install
 
 ```bash
-/plugin install github:<your-lab-org>/research-diary-plugin
+/plugin install github:apple4ree/skill_lab_diary
 ```
 
 ## Configure
