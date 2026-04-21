@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Tests for skills/research-diary/scripts/diary_setup.sh
+
+set -u
+THIS_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$THIS_DIR/.." && pwd)"
+SCRIPT="$REPO_ROOT/skills/research-diary/scripts/diary_setup.sh"
+
+# shellcheck disable=SC1091
+. "$THIS_DIR/test_helpers.sh"
+_test_reset_counters
+
+TMP_ROOT="$THIS_DIR/tmp"
+mkdir -p "$TMP_ROOT"
+
+# --- Test: clones from remote when local path missing and remote set ---
+_test_begin "clones remote into DIARY_LOCAL_PATH when path missing"
+
+SANDBOX=$(setup_tmpdir "$TMP_ROOT")
+REMOTE="$SANDBOX/remote.git"
+LOCAL="$SANDBOX/diary"
+
+# Build a bare remote with one commit so clone succeeds
+git init --bare -q "$REMOTE"
+SEED="$SANDBOX/seed"
+git init -q -b main "$SEED"
+( cd "$SEED" && git -c user.email=t@t -c user.name=t commit --allow-empty -q -m init \
+    && git remote add origin "$REMOTE" \
+    && git push -q origin main )
+
+DIARY_LOCAL_PATH="$LOCAL" DIARY_GIT_REMOTE="$REMOTE" bash "$SCRIPT"
+actual_exit=$?
+
+if [ $actual_exit -eq 0 ] && [ -d "$LOCAL/.git" ]; then
+    _test_ok
+else
+    _test_fail "expected clone to create git repo at $LOCAL (exit=$actual_exit)"
+fi
+
+cleanup_tmpdir "$SANDBOX"
+
+# --- Summary ---
+echo ""
+echo "Passed: $TEST_PASS | Failed: $TEST_FAIL"
+[ $TEST_FAIL -eq 0 ]
