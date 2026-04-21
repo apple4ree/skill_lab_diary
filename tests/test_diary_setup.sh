@@ -77,6 +77,25 @@ fi
 
 cleanup_tmpdir "$SANDBOX"
 
+# --- Test: error when path exists but is not a git repo ---
+_test_begin "error when path exists but is not a git repo"
+
+SANDBOX=$(setup_tmpdir "$TMP_ROOT")
+LOCAL="$SANDBOX/diary"
+mkdir -p "$LOCAL"
+# No git init on purpose
+
+DIARY_LOCAL_PATH="$LOCAL" bash "$SCRIPT" 2>/dev/null
+actual_exit=$?
+
+if [ $actual_exit -eq 1 ]; then
+    _test_ok
+else
+    _test_fail "expected exit 1, got $actual_exit"
+fi
+
+cleanup_tmpdir "$SANDBOX"
+
 # --- Summary ---
 echo ""
 echo "Passed: $TEST_PASS | Failed: $TEST_FAIL"
