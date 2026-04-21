@@ -56,6 +56,27 @@ fi
 
 cleanup_tmpdir "$SANDBOX"
 
+# --- Test: skip when path already a git repo ---
+_test_begin "skip when local path is already a git repo"
+
+SANDBOX=$(setup_tmpdir "$TMP_ROOT")
+LOCAL="$SANDBOX/diary"
+mkdir -p "$LOCAL"
+git -C "$LOCAL" init -q -b main
+# Mark so we can detect re-init
+touch "$LOCAL/marker"
+
+DIARY_LOCAL_PATH="$LOCAL" bash "$SCRIPT"
+actual_exit=$?
+
+if [ $actual_exit -eq 0 ] && [ -f "$LOCAL/marker" ]; then
+    _test_ok
+else
+    _test_fail "expected skip; marker missing or nonzero exit ($actual_exit)"
+fi
+
+cleanup_tmpdir "$SANDBOX"
+
 # --- Summary ---
 echo ""
 echo "Passed: $TEST_PASS | Failed: $TEST_FAIL"
