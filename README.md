@@ -1,8 +1,8 @@
 # research-diary-plugin
 
-A Claude Code plugin that writes structured per-project research diaries from your current session, stores them in a local git-tracked directory, and pushes them to your personal GitHub repo.
+A Claude Code plugin that writes structured per-project research diaries from your current session and stores them inside each project, in the project's own nested `research-diary/` git repo.
 
-Designed for lab-wide deployment: one plugin install per researcher, individual config via `settings.json`.
+Designed for lab-wide deployment: one plugin install per researcher, zero global configuration required. Per-project isolation is the design goal — each project's diary is self-contained.
 
 ## What It Does
 
@@ -10,11 +10,11 @@ Invoke `/research-diary` at the end of (or during) a research session and Claude
 
 1. Survey the current session's conversation.
 2. Extract structured fields: Goal, Hypothesis, Experiments, Done, Results, Decisions & Rationale, Discarded, Blockers, Next.
-3. Write `~/research-diary/<project>/<today>.md` (path configurable).
+3. Write `./research-diary/<today>.md` inside the current project directory.
 4. If a diary already exists for today, merge the new content (append by default; ask for confirmation before modifying existing entries).
-5. Commit and push to your configured GitHub repo.
+5. Commit to the project's local `research-diary/` nested git repo. Never pushes unless you've manually configured a remote inside that nested repo.
 
-Project name = basename of the current working directory (override with a `.diary-project-name` file).
+Project name (used only inside the diary's frontmatter for cross-project grep) = basename of the current working directory. Override with a `.diary-project-name` file.
 
 ## Install
 
@@ -27,55 +27,38 @@ This repo is a single-plugin marketplace. Install in two steps:
 
 Note: the first argument is `owner/repo` (no `github:` prefix).
 
-(Later updates: `/plugin marketplace update skill_lab_diary` then reinstall.)
-
-## Configure
-
-### Option A — Interactive setup (recommended)
-
-After installing, run:
-
-```
-/research-diary-setup
-```
-
-Claude will prompt you for your diary repo URL and local path, write the values into `~/.claude/settings.json`, and initialize the local diary directory. You can re-run it later to change the configuration.
-
-### Option B — Manual
-
-Add to `~/.claude/settings.json`:
-
-```json
-{
-  "env": {
-    "DIARY_LOCAL_PATH": "/home/<you>/research-diary",
-    "DIARY_GIT_REMOTE": "git@github.com:<you>/research-diary.git"
-  }
-}
-```
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `DIARY_LOCAL_PATH` | `~/research-diary` | Where diaries live locally. This directory is itself a git clone of your remote |
-| `DIARY_GIT_REMOTE` | (unset) | Your personal GitHub repo. Omit to stay local-only (push is skipped) |
-
-On first run the plugin will `git clone $DIARY_GIT_REMOTE $DIARY_LOCAL_PATH` (or `git init` if no remote is set).
+Later updates: `/plugin marketplace update skill_lab_diary` then reinstall.
 
 ## Usage
 
-In any project directory:
+No configuration needed. In any project directory:
 
 ```
+$ cd ~/some-project
 $ claude
 > ... do your research work ...
 > /research-diary
 ```
 
+On first use, the plugin creates `./research-diary/` and `git init`s it. Subsequent invocations append to today's file or create the next day's.
+
 Re-run later the same day to append; Claude will ask before modifying existing entries (e.g., moving a resolved Blocker to Done).
+
+### Optional: back up a project's diary to a remote
+
+`research-diary/` is a nested git repo separate from your project's own git. To back it up somewhere:
+
+```bash
+cd research-diary
+git remote add origin git@github.com:<you>/some-project-diary.git
+git push -u origin main
+```
+
+Once a remote exists, every `/research-diary` call pushes automatically (push failures are non-fatal — the local commit always succeeds).
 
 ## File Format
 
-`~/research-diary/<project>/YYYY-MM-DD.md` with YAML frontmatter and Markdown sections. See `skills/research-diary/references/diary_format.md` for the full schema and example.
+`./research-diary/YYYY-MM-DD.md` with YAML frontmatter and Markdown sections. See `plugin/skills/research-diary/references/diary_format.md` for the full schema and example.
 
 ## Development
 
@@ -85,27 +68,25 @@ Re-run later the same day to append; Claude will ask before modifying existing e
 bash tests/run_tests.sh
 ```
 
-Tests cover the two shell scripts (`diary_setup.sh`, `diary_commit.sh`). Merge behavior is driven by Claude at runtime; see `skills/research-diary/references/test_scenarios.md` for manual regression scenarios.
+Tests cover the two shell scripts (`diary_setup.sh`, `diary_commit.sh`). Merge behavior is driven by Claude at runtime; see `plugin/skills/research-diary/references/test_scenarios.md` for manual regression scenarios.
 
 ### Layout
 
 ```
 .
 ├── .claude-plugin/marketplace.json   # marketplace index
-├── plugin/                            # the plugin itself
-│   ├── .claude-plugin/plugin.json    # plugin manifest
+├── plugin/                           # the plugin itself
+│   ├── .claude-plugin/plugin.json   # plugin manifest
 │   └── skills/
-│       ├── research-diary/
-│       │   ├── SKILL.md
-│       │   ├── scripts/
-│       │   │   ├── diary_setup.sh
-│       │   │   └── diary_commit.sh
-│       │   └── references/
-│       │       ├── diary_format.md
-│       │       ├── merge_rules.md
-│       │       └── test_scenarios.md
-│       └── research-diary-setup/
-│           └── SKILL.md
+│       └── research-diary/
+│           ├── SKILL.md
+│           ├── scripts/
+│           │   ├── diary_setup.sh
+│           │   └── diary_commit.sh
+│           └── references/
+│               ├── diary_format.md
+│               ├── merge_rules.md
+│               └── test_scenarios.md
 ├── tests/
 ├── docs/superpowers/{specs,plans}/
 └── README.md

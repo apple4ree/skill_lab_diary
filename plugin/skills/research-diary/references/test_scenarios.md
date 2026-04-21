@@ -1,33 +1,34 @@
 # Manual Regression Scenarios — Merge Logic
 
-Merge decisions are made by Claude at runtime, so automated unit tests do not cover them. After any change to `SKILL.md` or `merge_rules.md`, walk through each scenario below against a disposable `DIARY_LOCAL_PATH` and confirm expected behavior.
+Merge decisions are made by Claude at runtime, so automated unit tests do not cover them. After any change to `SKILL.md` or `merge_rules.md`, walk through each scenario below from a disposable project directory and confirm expected behavior.
 
 ## Setup
 
 ```bash
-export DIARY_LOCAL_PATH=/tmp/diary-test
-unset DIARY_GIT_REMOTE
-rm -rf "$DIARY_LOCAL_PATH"
+TEST_PROJECT=/tmp/diary-test-project
+rm -rf "$TEST_PROJECT"
+mkdir -p "$TEST_PROJECT"
+cd "$TEST_PROJECT"
 ```
 
-Run each scenario in a fresh Claude Code session in a project directory of your choice.
+Run each scenario in a fresh Claude Code session started from `$TEST_PROJECT`.
 
 ---
 
 ## Scenario 1 — Fresh first diary
 
-**Precondition:** `$DIARY_LOCAL_PATH` does not exist.
+**Precondition:** No `research-diary/` exists in the current project directory.
 
 **Steps:**
 1. Do some research work in the session (read a file, run an experiment, hit a blocker).
 2. Run `/research-diary`.
 
 **Expected:**
-- `diary_setup.sh` creates `$DIARY_LOCAL_PATH` via `git init`.
-- A file is written at `$DIARY_LOCAL_PATH/<project>/<today>.md`.
+- `diary_setup.sh` creates `./research-diary/` via `git init`.
+- A file is written at `./research-diary/<today>.md`.
 - Frontmatter `sessions: 1`, one `work_hours` entry.
 - Only sections with actual content appear (no empty sections).
-- A commit exists in the local repo; push skipped since no remote.
+- A commit exists in the nested local repo; push skipped since no remote configured.
 
 ---
 
@@ -79,8 +80,12 @@ Run each scenario in a fresh Claude Code session in a project directory of your 
 ## Scenario 5 — Push failure
 
 **Precondition:**
-- `DIARY_GIT_REMOTE` set to an unreachable URL, e.g. `git@github.com:nonexistent-user/no-repo.git`.
-- `$DIARY_LOCAL_PATH` freshly initialized OR scenario 1 completed without a remote — then add the bad remote manually.
+- User has manually added an unreachable remote inside the diary repo:
+  ```bash
+  cd ./research-diary
+  git remote add origin git@github.com:nonexistent-user/no-repo.git
+  cd ..
+  ```
 
 **Steps:**
 1. Do some work and run `/research-diary`.
@@ -88,7 +93,7 @@ Run each scenario in a fresh Claude Code session in a project directory of your 
 **Expected:**
 - Local file written and committed.
 - Push attempt fails; stderr shows `push to origin failed (commit kept locally)`.
-- Exit status of the overall skill is success; next invocation will push both commits once reachable.
+- Exit status of the overall skill is success; next invocation will push both commits once the remote becomes reachable.
 
 ---
 
@@ -104,3 +109,19 @@ Run each scenario in a fresh Claude Code session in a project directory of your 
 - Claude reports inability to parse existing file.
 - Existing file moved to `<today>.md.bak`.
 - Fresh diary written using Case A flow.
+
+---
+
+## Scenario 7 — Second project isolation
+
+**Precondition:** Scenario 1 has been completed in project A (`/tmp/diary-test-project`).
+
+**Steps:**
+1. `mkdir -p /tmp/diary-test-project-B && cd /tmp/diary-test-project-B`
+2. Start a new Claude Code session there, do some work.
+3. Run `/research-diary`.
+
+**Expected:**
+- `./research-diary/` is created in project B, independent of project A's.
+- Project B's diary does not reference project A's content.
+- Each project's diary has its own git history.

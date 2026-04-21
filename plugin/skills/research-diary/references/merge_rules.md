@@ -5,7 +5,7 @@ Defines how `/research-diary` behaves when invoked multiple times on the same da
 ## Decision Tree
 
 ```
-Does ${DIARY_LOCAL_PATH}/<project>/<today>.md exist?
+Does $(pwd)/research-diary/<today>.md exist?
 ├── No  → Case A (fresh write)
 └── Yes → Case B (merge)
 ```

@@ -4,6 +4,9 @@
 # Test temporary directories
 tests/tmp/
 
+# Claude Code local project state (user-specific, not part of plugin)
+.claude/
+
 # macOS/editor noise
 .DS_Store
 *.swp

@@ -1,7 +1,7 @@
 {
   "name": "research-diary-plugin",
-  "version": "0.1.0",
-  "description": "Structured per-project research diaries written from Claude Code sessions, pushed to a personal GitHub repo.",
+  "version": "0.2.0",
+  "description": "Structured per-project research diaries written from Claude Code sessions, stored in each project's own nested research-diary/ git repo.",
   "author": {
     "name": "Lab research tooling"
   }

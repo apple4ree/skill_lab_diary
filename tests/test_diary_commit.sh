@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tests for skills/research-diary/scripts/diary_commit.sh
+# Tests for plugin/skills/research-diary/scripts/diary_commit.sh
 
 set -u
 THIS_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -18,18 +18,18 @@ _test_begin "commits diary file with standard message"
 
 SANDBOX=$(setup_tmpdir "$TMP_ROOT")
 LOCAL="$SANDBOX/diary"
-mkdir -p "$LOCAL/proj"
+mkdir -p "$LOCAL"
 git -C "$LOCAL" init -q -b main
 git -C "$LOCAL" config user.email t@t
 git -C "$LOCAL" config user.name t
-echo "# hello" > "$LOCAL/proj/2026-04-21.md"
+echo "# hello" > "$LOCAL/2026-04-21.md"
 
-DIARY_LOCAL_PATH="$LOCAL" bash "$SCRIPT" proj 2026-04-21
+DIARY_LOCAL_PATH="$LOCAL" bash "$SCRIPT" 2026-04-21
 actual_exit=$?
 
 msg=$(git -C "$LOCAL" log -1 --pretty=%s 2>/dev/null || echo "")
 
-if [ $actual_exit -eq 0 ] && [ "$msg" = "diary(proj): 2026-04-21" ]; then
+if [ $actual_exit -eq 0 ] && [ "$msg" = "diary: 2026-04-21" ]; then
     _test_ok
 else
     _test_fail "exit=$actual_exit; last commit subject=[$msg]"
@@ -37,7 +37,7 @@ fi
 
 cleanup_tmpdir "$SANDBOX"
 
-# --- Test: push succeeds when remote reachable ---
+# --- Test: pushes to remote when configured and reachable ---
 _test_begin "pushes to remote when configured and reachable"
 
 SANDBOX=$(setup_tmpdir "$TMP_ROOT")
@@ -45,17 +45,16 @@ LOCAL="$SANDBOX/diary"
 REMOTE="$SANDBOX/remote.git"
 
 git init --bare -q -b main "$REMOTE"
-mkdir -p "$LOCAL/proj"
+mkdir -p "$LOCAL"
 git -C "$LOCAL" init -q -b main
 git -C "$LOCAL" config user.email t@t
 git -C "$LOCAL" config user.name t
 git -C "$LOCAL" remote add origin "$REMOTE"
-echo "# hello" > "$LOCAL/proj/2026-04-21.md"
+echo "# hello" > "$LOCAL/2026-04-21.md"
 
-DIARY_LOCAL_PATH="$LOCAL" bash "$SCRIPT" proj 2026-04-21
+DIARY_LOCAL_PATH="$LOCAL" bash "$SCRIPT" 2026-04-21
 actual_exit=$?
 
-# Confirm the commit appeared on remote
 remote_has=$(git --git-dir="$REMOTE" log --oneline 2>/dev/null | wc -l | tr -d ' ')
 
 if [ $actual_exit -eq 0 ] && [ "$remote_has" = "1" ]; then
@@ -66,23 +65,21 @@ fi
 
 cleanup_tmpdir "$SANDBOX"
 
-# --- Test: push failure is non-fatal (exit 0, local commit preserved) ---
+# --- Test: push failure is non-fatal ---
 _test_begin "push failure is non-fatal"
 
 SANDBOX=$(setup_tmpdir "$TMP_ROOT")
 LOCAL="$SANDBOX/diary"
-mkdir -p "$LOCAL/proj"
+mkdir -p "$LOCAL"
 git -C "$LOCAL" init -q -b main
 git -C "$LOCAL" config user.email t@t
 git -C "$LOCAL" config user.name t
-# Configure an unreachable remote
 git -C "$LOCAL" remote add origin "$SANDBOX/does-not-exist.git"
-echo "# hello" > "$LOCAL/proj/2026-04-21.md"
+echo "# hello" > "$LOCAL/2026-04-21.md"
 
-DIARY_LOCAL_PATH="$LOCAL" bash "$SCRIPT" proj 2026-04-21 2>/dev/null
+DIARY_LOCAL_PATH="$LOCAL" bash "$SCRIPT" 2026-04-21 2>/dev/null
 actual_exit=$?
 
-# Local commit must have happened even though push failed
 local_commits=$(git -C "$LOCAL" log --oneline 2>/dev/null | wc -l | tr -d ' ')
 
 if [ $actual_exit -eq 0 ] && [ "$local_commits" = "1" ]; then

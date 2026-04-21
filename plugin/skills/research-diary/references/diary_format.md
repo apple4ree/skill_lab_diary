@@ -5,12 +5,12 @@ Canonical specification of a per-day diary file. Used by `SKILL.md` as the autho
 ## Path
 
 ```
-${DIARY_LOCAL_PATH}/<project>/<YYYY-MM-DD>.md
+$(pwd)/research-diary/<YYYY-MM-DD>.md
 ```
 
-- `DIARY_LOCAL_PATH` default: `~/research-diary`
-- `<project>`: basename of the current working directory, OR the content of `.diary-project-name` if that file exists in the working directory
-- `<YYYY-MM-DD>`: local date at write time
+- Diaries live inside the current project directory, in a nested git repo at `./research-diary/`.
+- `<YYYY-MM-DD>`: local date at write time.
+- The `project` *frontmatter* field (below) still records the basename of the project for cross-project grep; the directory structure itself is flat (one file per day per project).
 
 ## File Structure
 

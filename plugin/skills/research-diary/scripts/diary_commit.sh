@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Commit and (optionally) push a diary file to the local diary repo.
-# Usage: diary_commit.sh <project> <YYYY-MM-DD>
-# Env:
-#   DIARY_LOCAL_PATH  (default: ~/research-diary)
+# Commit (and optionally push) a diary file in the current project's research-diary repo.
+# Usage: diary_commit.sh <YYYY-MM-DD>
+#
+# Env (for testing/override):
+#   DIARY_LOCAL_PATH  explicit path to use instead of $(pwd)/research-diary
 #
 # Exit codes:
 #   0 on successful local commit (push failure does NOT fail this script)
@@ -10,15 +11,14 @@
 
 set -u
 
-if [ $# -ne 2 ]; then
-    echo "usage: diary_commit.sh <project> <YYYY-MM-DD>" >&2
+if [ $# -ne 1 ]; then
+    echo "usage: diary_commit.sh <YYYY-MM-DD>" >&2
     exit 2
 fi
 
-project="$1"
-date="$2"
-local_path="${DIARY_LOCAL_PATH:-$HOME/research-diary}"
-rel_path="$project/$date.md"
+date="$1"
+local_path="${DIARY_LOCAL_PATH:-$(pwd)/research-diary}"
+rel_path="$date.md"
 
 if [ ! -d "$local_path/.git" ] && [ ! -f "$local_path/.git" ]; then
     echo "diary_commit: not a git repo: $local_path" >&2
@@ -33,9 +33,9 @@ if [ ! -f "$rel_path" ]; then
 fi
 
 git add "$rel_path"
-git commit -q -m "diary($project): $date" || exit 1
+git commit -q -m "diary: $date" || exit 1
 
-# Attempt push if a remote is configured; never fail the script on push error
+# Attempt push only if the user has manually configured a remote. Never fail on push error.
 if git remote | grep -q .; then
     remote_name=$(git remote | head -1)
     current_branch=$(git rev-parse --abbrev-ref HEAD)
