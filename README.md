@@ -21,9 +21,11 @@ Project name = basename of the current working directory (override with a `.diar
 This repo is a single-plugin marketplace. Install in two steps:
 
 ```bash
-/plugin marketplace add github:apple4ree/skill_lab_diary
+/plugin marketplace add apple4ree/skill_lab_diary
 /plugin install research-diary-plugin@skill_lab_diary
 ```
+
+Note: the first argument is `owner/repo` (no `github:` prefix).
 
 (Later updates: `/plugin marketplace update skill_lab_diary` then reinstall.)
 
