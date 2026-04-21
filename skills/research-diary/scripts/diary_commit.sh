@@ -20,7 +20,7 @@ date="$2"
 local_path="${DIARY_LOCAL_PATH:-$HOME/research-diary}"
 rel_path="$project/$date.md"
 
-if [ ! -d "$local_path/.git" ]; then
+if [ ! -d "$local_path/.git" ] && [ ! -f "$local_path/.git" ]; then
     echo "diary_commit: not a git repo: $local_path" >&2
     exit 1
 fi
