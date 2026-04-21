@@ -35,4 +35,13 @@ fi
 git add "$rel_path"
 git commit -q -m "diary($project): $date" || exit 1
 
+# Attempt push if a remote is configured; never fail the script on push error
+if git remote | grep -q .; then
+    remote_name=$(git remote | head -1)
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
+    if ! git push -q "$remote_name" "$current_branch" 2>/dev/null; then
+        echo "diary_commit: push to $remote_name failed (commit kept locally)" >&2
+    fi
+fi
+
 exit 0
