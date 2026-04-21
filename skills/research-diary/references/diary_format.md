@@ -89,9 +89,6 @@ sessions: 1
 - Used plain bash tests over bats — avoids external dependency for lab users.
 - Push failure is non-fatal so offline sessions still preserve local diary.
 
-## Blockers (막힌 점)
-- None.
-
 ## Next (다음 액션)
 - Write SKILL.md orchestration procedure.
 ```
