@@ -1,0 +1,9 @@
+# Research diary backup files (per spec §5 step 7)
+*.bak
+
+# Test temporary directories
+tests/tmp/
+
+# macOS/editor noise
+.DS_Store
+*.swp
