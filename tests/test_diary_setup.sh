@@ -88,6 +88,67 @@ fi
 
 cleanup_tmpdir "$SANDBOX"
 
+# --- Test: DIARY_REMOTE_URL configures origin and project-named branch ---
+_test_begin "DIARY_REMOTE_URL sets origin and creates project-named branch"
+
+SANDBOX=$(setup_tmpdir "$TMP_ROOT")
+PROJECT_NAME="my_proj"
+PROJECT_DIR="$SANDBOX/$PROJECT_NAME"
+mkdir -p "$PROJECT_DIR"
+REMOTE_URL="$SANDBOX/remote.git"
+git init --bare -q "$REMOTE_URL"
+
+(
+    cd "$PROJECT_DIR"
+    unset DIARY_LOCAL_PATH
+    DIARY_REMOTE_URL="$REMOTE_URL" bash "$SCRIPT"
+)
+actual_exit=$?
+
+diary_dir="$PROJECT_DIR/research-diary"
+
+if [ $actual_exit -ne 0 ] || [ ! -d "$diary_dir/.git" ]; then
+    _test_fail "setup failed: exit=$actual_exit; diary_dir=$diary_dir"
+else
+    remote=$(git -C "$diary_dir" remote get-url origin 2>/dev/null || echo "")
+    branch=$(git -C "$diary_dir" symbolic-ref --short HEAD 2>/dev/null || echo "")
+    if [ "$remote" = "$REMOTE_URL" ] && [ "$branch" = "$PROJECT_NAME" ]; then
+        _test_ok
+    else
+        _test_fail "remote=[$remote] (expected $REMOTE_URL); branch=[$branch] (expected $PROJECT_NAME)"
+    fi
+fi
+
+cleanup_tmpdir "$SANDBOX"
+
+# --- Test: DIARY_REMOTE_URL + .diary-project-name override wins over basename ---
+_test_begin "DIARY_REMOTE_URL uses .diary-project-name override when present"
+
+SANDBOX=$(setup_tmpdir "$TMP_ROOT")
+PROJECT_DIR="$SANDBOX/ugly_dirname"
+mkdir -p "$PROJECT_DIR"
+echo "clean_name" > "$PROJECT_DIR/.diary-project-name"
+REMOTE_URL="$SANDBOX/remote.git"
+git init --bare -q "$REMOTE_URL"
+
+(
+    cd "$PROJECT_DIR"
+    unset DIARY_LOCAL_PATH
+    DIARY_REMOTE_URL="$REMOTE_URL" bash "$SCRIPT"
+)
+actual_exit=$?
+
+diary_dir="$PROJECT_DIR/research-diary"
+branch=$(git -C "$diary_dir" symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+if [ $actual_exit -eq 0 ] && [ "$branch" = "clean_name" ]; then
+    _test_ok
+else
+    _test_fail "exit=$actual_exit; branch=[$branch] (expected clean_name)"
+fi
+
+cleanup_tmpdir "$SANDBOX"
+
 # --- Summary ---
 echo ""
 echo "Passed: $TEST_PASS | Failed: $TEST_FAIL"

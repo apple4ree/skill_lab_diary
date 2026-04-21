@@ -44,17 +44,31 @@ On first use, the plugin creates `./research-diary/` and `git init`s it. Subsequ
 
 Re-run later the same day to append; Claude will ask before modifying existing entries (e.g., moving a resolved Blocker to Done).
 
-### Optional: back up a project's diary to a remote
+### Optional: central remote for all projects
 
-`research-diary/` is a nested git repo separate from your project's own git. To back it up somewhere:
+Set `DIARY_REMOTE_URL` in `~/.claude/settings.json` to have every new project's diary auto-configure that URL as its `origin`:
+
+```json
+{
+  "env": {
+    "DIARY_REMOTE_URL": "git@github.com:<you>/research-diary.git"
+  }
+}
+```
+
+Each project's diary is initialized on a **branch named after the project** (basename of `$(pwd)`, or the contents of `./.diary-project-name` if present). All projects share one repo on GitHub, each on its own branch — `git checkout <project>` to view any project's diary history.
+
+Push happens automatically on every `/research-diary` call. Failures are non-fatal — the local commit always succeeds.
+
+### Optional: per-project remote (manual)
+
+If you prefer separate repos per project, skip `DIARY_REMOTE_URL` and add remotes one at a time:
 
 ```bash
 cd research-diary
 git remote add origin git@github.com:<you>/some-project-diary.git
 git push -u origin main
 ```
-
-Once a remote exists, every `/research-diary` call pushes automatically (push failures are non-fatal — the local commit always succeeds).
 
 ## File Format
 

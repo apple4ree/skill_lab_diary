@@ -9,6 +9,8 @@ Write or update a per-project, per-day research diary from the current Claude Co
 
 Diaries live inside each project at `$(pwd)/research-diary/<YYYY-MM-DD>.md`. The `research-diary/` directory is a nested git repo isolated from the project's own git history. No global setup is required — the first invocation auto-initializes the directory.
 
+**Optional central-remote mode:** Set env `DIARY_REMOTE_URL` (e.g., in `~/.claude/settings.json`) to automatically configure every new project's diary repo with that remote. The diary repo is initialized on a branch named after the project so multiple projects can share one remote without conflicting. Push on that branch happens automatically via `diary_commit.sh`.
+
 ## When to Activate
 
 - User runs `/research-diary`.
@@ -26,7 +28,9 @@ Run:
 bash "${CLAUDE_PLUGIN_ROOT}/skills/research-diary/scripts/diary_setup.sh"
 ```
 
-This creates `$(pwd)/research-diary/` and `git init`s it if it doesn't exist. If the path exists but isn't a git repo, the script exits 1 — stop and ask the user: "`$(pwd)/research-diary` exists but isn't a git repository. Reinitialize or pick a different layout?" Wait for confirmation.
+This creates `$(pwd)/research-diary/` and `git init`s it if it doesn't exist. If `$DIARY_REMOTE_URL` is set, the script also adds it as `origin` and initializes the repo on a branch named after the project (basename of `$(pwd)`, or the contents of `./.diary-project-name` if present).
+
+If the path exists but isn't a git repo, the script exits 1 — stop and ask the user: "`$(pwd)/research-diary` exists but isn't a git repository. Reinitialize or pick a different layout?" Wait for confirmation.
 
 ### 2. Resolve today's date and target path
 
@@ -80,7 +84,7 @@ Run:
 bash "${CLAUDE_PLUGIN_ROOT}/skills/research-diary/scripts/diary_commit.sh" <date>
 ```
 
-The script commits to the project's `research-diary/` nested repo with message `diary: <date>`. It will push only if the user manually added a git remote (`cd research-diary && git remote add origin ...`). Push failure is non-fatal.
+The script commits to the project's `research-diary/` nested repo with message `diary: <date>`. It will push only if a git remote exists on that repo (either auto-added via `DIARY_REMOTE_URL` during setup, or manually added with `cd research-diary && git remote add origin ...`). Push failure is non-fatal.
 
 - Exit 0 always means the local commit succeeded.
 - Non-zero exit from this script: report to user, do not retry automatically.
@@ -91,7 +95,7 @@ Print:
 
 - File path written (e.g. `./research-diary/2026-04-21.md`).
 - Case A or Case B (and which modification proposals were applied).
-- Push status: succeeded / failed (with one-line reason) / skipped (no remote — default for per-project mode).
+- Push status: succeeded (and to which branch) / failed (with one-line reason) / skipped (no remote).
 
 ## Notes
 
@@ -99,4 +103,4 @@ Print:
 - Never batch multiple projects in one invocation; `/research-diary` only ever writes to the current directory's `research-diary/`.
 - `research-diary/` is a nested git repo; the parent project's git (if any) sees it as an untracked directory. Add it to the project's `.gitignore` if you don't want to see it there.
 - `*.bak` files are ignored by the diary repo's `.gitignore`; they exist as safety nets for merge mistakes.
-- For backup: each project's diary can have its own remote (`cd research-diary && git remote add origin <url> && git push -u origin main`). No global remote — per-project isolation is the design goal.
+- For backup: set `DIARY_REMOTE_URL` once in settings.json for auto-configuration across all projects (branch per project, shared remote repo). Or add a remote per-project manually if you want separate repos.
